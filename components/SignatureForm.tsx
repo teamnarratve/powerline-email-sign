@@ -186,13 +186,13 @@ const SignatureForm: React.FC<SignatureFormProps> = ({ data, onChange }) => {
       <div>
         <SectionHeader icon={MapPin} title="Location" />
         <div className={inputWrapperClass}>
-            <label className={labelClass}>Office Address (Editable)</label>
+            <label className={labelClass}>Office Address</label>
             <textarea 
             name="address" 
             value={data.address} 
-            onChange={handleChange} 
+            readOnly
             rows={4}
-            className={`${inputClass} resize-none font-mono text-xs leading-relaxed`}
+            className={`${inputClass} resize-none font-mono text-xs leading-relaxed bg-slate-100 text-slate-500 cursor-not-allowed`}
             />
         </div>
       </div>

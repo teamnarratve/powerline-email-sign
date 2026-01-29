@@ -6,11 +6,13 @@ import { INITIAL_DATA } from './constants';
 import { generateSignatureHTML } from './utils/template';
 import SignatureForm from './components/SignatureForm';
 import SignaturePreview, { PreviewHandle } from './components/SignaturePreview';
+import SuccessModal from './components/SuccessModal';
 
 const App: React.FC = () => {
   const [data, setData] = useState<SignatureData>(INITIAL_DATA);
   const previewRef = useRef<PreviewHandle>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleDataChange = (key: keyof SignatureData, value: string) => {
     setData(prev => ({ ...prev, [key]: value }));
@@ -53,8 +55,7 @@ const App: React.FC = () => {
 
   const copyToClipboard = () => {
       navigator.clipboard.writeText(generatedHtml).then(() => {
-          // Could replace with a toast notification in a real app
-          alert("HTML code copied to clipboard!");
+          setShowSuccessModal(true);
       }, () => {
           alert("Failed to copy code.");
       });
@@ -62,6 +63,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200 supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

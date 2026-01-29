@@ -42,24 +42,24 @@ export const generateSignatureHTML = (data: SignatureData): string => {
   if (data.faxNumber && data.faxNumber.trim() !== '') {
       faxMobileRow = `
         <tr>
-            <td style="width: 25px; vertical-align: middle; padding-bottom: 4px;">
-                <img src="${faxIcon}" width="14" height="14" alt="Fax" style="vertical-align: middle;">
+            <td style="width: 20px; vertical-align: middle; height: 20px;">
+                <img src="${faxIcon}" width="14" height="14" alt="Fax" style="vertical-align: middle; display: block; margin: 0;">
             </td>
-            <td style="vertical-align: middle; white-space: nowrap; padding-bottom: 4px;">
-                <span style="margin-right: 12px; vertical-align: middle;">${data.faxNumber}</span>
-                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle; margin-right: 6px;">
-                <span style="vertical-align: middle;">${data.mobileNumber}</span>
+            <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
+                <span style="margin-right: 12px; vertical-align: middle; line-height: 20px;">${data.faxNumber}</span>
+                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle; margin-right: 6px; display: inline-block;">
+                <span style="vertical-align: middle; line-height: 20px;">${data.mobileNumber}</span>
             </td>
         </tr>
       `;
   } else {
       faxMobileRow = `
         <tr>
-            <td style="width: 25px; vertical-align: middle; padding-bottom: 4px;">
-                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle;">
+            <td style="width: 20px; vertical-align: middle; height: 20px;">
+                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle; display: block; margin: 0;">
             </td>
-            <td style="vertical-align: middle; white-space: nowrap; padding-bottom: 4px;">
-                <span style="vertical-align: middle;">${data.mobileNumber}</span>
+            <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
+                <span style="vertical-align: middle; line-height: 20px;">${data.mobileNumber}</span>
             </td>
         </tr>
       `;
@@ -98,15 +98,16 @@ export const generateSignatureHTML = (data: SignatureData): string => {
                                         </div>
                                         
                                         <!-- Contact Info Table -->
-                                        <table cellpadding="0" cellspacing="0" border="0" style="font-size: 13px; color: ${colors.textGray}; line-height: 1.6;">
+                                        <!-- Enforcing strict layout constraints for perfect alignment -->
+                                        <table cellpadding="0" cellspacing="0" border="0" style="font-size: 13px; color: ${colors.textGray}; line-height: 20px;">
                                             <!-- Phone -->
                                             <tr>
-                                                <td style="width: 25px; vertical-align: middle; padding-bottom: 4px;">
-                                                    <img src="${phoneIcon}" width="12" height="12" alt="Phone" style="vertical-align: middle;">
+                                                <td style="width: 20px; vertical-align: middle; height: 20px;">
+                                                    <img src="${phoneIcon}" width="12" height="12" alt="Phone" style="vertical-align: middle; display: block; margin: 0;">
                                                 </td>
-                                                <td style="vertical-align: middle; white-space: nowrap; padding-bottom: 4px;">
-                                                    <span style="vertical-align: middle;">${data.officePhone}</span> 
-                                                    <span style="font-weight: 700; color: #222; margin-left: 5px; font-size: 11px; vertical-align: middle;">EXT - ${data.extension}</span>
+                                                <td style="vertical-align: middle; height: 20px; padding-left: 8px;">
+                                                    <span style="vertical-align: middle; line-height: 20px;">${data.officePhone}</span> 
+                                                    <span style="font-weight: 700; color: #222; margin-left: 5px; font-size: 11px; vertical-align: middle; line-height: 20px;">EXT - ${data.extension}</span>
                                                 </td>
                                             </tr>
                                             
@@ -115,11 +116,11 @@ export const generateSignatureHTML = (data: SignatureData): string => {
 
                                             <!-- Email -->
                                             <tr>
-                                                <td style="width: 25px; vertical-align: middle; padding-bottom: 4px;">
-                                                    <img src="${emailIcon}" width="12" height="12" alt="Email" style="vertical-align: middle;">
+                                                <td style="width: 20px; vertical-align: middle; height: 20px;">
+                                                    <img src="${emailIcon}" width="12" height="12" alt="Email" style="vertical-align: middle; display: block; margin: 0;">
                                                 </td>
-                                                <td style="vertical-align: middle; padding-bottom: 4px;">
-                                                    <a href="mailto:${data.email}" style="color: ${colors.textGray}; text-decoration: none; vertical-align: middle;">${data.email}</a>
+                                                <td style="vertical-align: middle; height: 20px; padding-left: 8px;">
+                                                    <a href="mailto:${data.email}" style="color: ${colors.textGray}; text-decoration: none; vertical-align: middle; line-height: 20px;">${data.email}</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -165,11 +166,11 @@ export const generateSignatureHTML = (data: SignatureData): string => {
                                                             <td style="vertical-align: middle;">
                                                                 <table cellpadding="0" cellspacing="0" border="0">
                                                                     <tr>
-                                                                        <td style="padding-right: 8px; vertical-align: middle;">
-                                                                            <img src="${websiteIcon}" width="14" height="14" style="vertical-align: middle; display: block;">
+                                                                        <td style="width: 20px; vertical-align: middle; height: 20px;">
+                                                                            <img src="${websiteIcon}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
                                                                         </td>
-                                                                        <td style="vertical-align: middle; white-space: nowrap; line-height: 14px;">
-                                                                            <a href="${FIXED_CONFIG.websiteUrl}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle;">${websiteDisplay}</a>
+                                                                        <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
+                                                                            <a href="${FIXED_CONFIG.websiteUrl}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle; line-height: 20px;">${websiteDisplay}</a>
                                                                         </td>
                                                                     </tr>
                                                                 </table>
@@ -178,11 +179,11 @@ export const generateSignatureHTML = (data: SignatureData): string => {
                                                             <td style="vertical-align: middle; text-align: right;">
                                                                 <table cellpadding="0" cellspacing="0" border="0" align="right">
                                                                     <tr>
-                                                                        <td style="padding-right: 8px; vertical-align: middle;">
-                                                                            <img src="${emailIcon}" width="14" height="14" style="vertical-align: middle; display: block;">
+                                                                        <td style="width: 20px; vertical-align: middle; height: 20px;">
+                                                                            <img src="${emailIcon}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
                                                                         </td>
-                                                                        <td style="vertical-align: middle; white-space: nowrap; line-height: 14px;">
-                                                                            <a href="mailto:${data.branchEmail}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle;">${data.branchEmail}</a>
+                                                                        <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
+                                                                            <a href="mailto:${data.branchEmail}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle; line-height: 20px;">${data.branchEmail}</a>
                                                                         </td>
                                                                     </tr>
                                                                 </table>

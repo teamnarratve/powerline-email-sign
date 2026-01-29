@@ -116,15 +116,23 @@ const SignaturePreview = forwardRef<PreviewHandle, SignaturePreviewProps>(({ htm
     <div className="w-full bg-white transition-all duration-300">
       
       {/* Visual Preview */}
-      <iframe
-        ref={iframeRef}
-        title="Signature Preview"
-        className="w-full border-none block"
-        sandbox="allow-same-origin allow-scripts"
-        scrolling="no"
-        style={{ minHeight: '250px', overflow: 'hidden' }} 
-      />
-
+      <div className="relative">
+        <iframe
+            ref={iframeRef}
+            title="Signature Preview"
+            className="w-full border-none block relative z-10"
+            sandbox="allow-same-origin allow-scripts"
+            scrolling="no"
+            style={{ minHeight: '250px', overflow: 'hidden' }} 
+        />
+        
+        {/* Watermark Overlay - Visible in UI, but NOT captured by html2canvas (since it captures iframe content) */}
+        <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center overflow-hidden">
+            <div className="transform -rotate-12 opacity-[0.03] select-none">
+                <span className="text-9xl font-black text-slate-900 whitespace-nowrap">PREVIEW</span>
+            </div>
+        </div>
+      </div>
 
     </div>
   );
