@@ -1,0 +1,115 @@
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import html2canvas from 'html2canvas';
+
+interface SignaturePreviewProps {
+  htmlContent: string;
+}
+
+export interface PreviewHandle {
+  captureImage: () => Promise<Blob | null>;
+}
+
+const SignaturePreview = forwardRef<PreviewHandle, SignaturePreviewProps>(({ htmlContent }, ref) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Expose capture functionality to parent
+  // Expose capture functionality to parent
+  useImperativeHandle(ref, () => ({
+    captureImage: async () => {
+      if (!iframeRef.current || !iframeRef.current.contentDocument) return null;
+
+      const doc = iframeRef.current.contentDocument;
+      // Select the table directly. We know it's the first child of body or we can query it.
+      const elementToCapture = doc.querySelector('table'); 
+
+      if (!elementToCapture) {
+          console.error("No table found in iframe to capture");
+          return null;
+      }
+
+      // Ensure all images within the table are loaded
+      const images = Array.from(elementToCapture.getElementsByTagName('img'));
+      await Promise.all(images.map((img: HTMLImageElement) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise<void>((resolve) => {
+              img.onload = () => resolve();
+              img.onerror = () => resolve(); // Validate even if error to prevent hanging
+          });
+      }));
+      
+      try {
+        const canvas = await html2canvas(elementToCapture as HTMLElement, {
+            scale: 3, // Increased scale for better quality
+            useCORS: true, 
+            backgroundColor: null, 
+            logging: false,
+            // Allow html2canvas to determine size from the element
+        });
+        
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, 'image/png');
+        });
+      } catch (error) {
+        console.error("Image capture failed", error);
+        return null;
+      }
+    }
+  }));
+
+  // Update Iframe for Live Preview
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (iframe) {
+      const doc = iframe.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(htmlContent);
+        doc.close();
+        
+        // Adjust height automatically
+        const updateHeight = () => {
+          if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+            iframe.style.height = '100px'; 
+            const newHeight = iframe.contentDocument.documentElement.scrollHeight + 20; // Added extra padding
+            iframe.style.height = `${newHeight}px`;
+          }
+        };
+
+        // Call immediately
+        updateHeight();
+        
+        // Also ensure we wait for images to load inside iframe to get correct height
+        const images = doc.getElementsByTagName('img');
+        if (images.length > 0) {
+            Array.from(images).forEach(img => {
+                img.onload = updateHeight;
+            });
+        }
+        
+        // Disable scrollbars on body
+        doc.body.style.overflow = 'hidden';
+      }
+    }
+  }, [htmlContent]);
+
+  return (
+    <div className="w-full bg-white transition-all duration-300">
+      
+      {/* Visual Preview */}
+      <iframe
+        ref={iframeRef}
+        title="Signature Preview"
+        className="w-full border-none block"
+        sandbox="allow-same-origin allow-scripts"
+        scrolling="no"
+        style={{ minHeight: '250px', overflow: 'hidden' }} 
+      />
+
+
+    </div>
+  );
+});
+
+export default SignaturePreview;
