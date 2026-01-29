@@ -28,21 +28,39 @@ const SignaturePreview = forwardRef<PreviewHandle, SignaturePreviewProps>(({ htm
       }
 
       // Ensure all images within the table are loaded
-      const images = Array.from(elementToCapture.getElementsByTagName('img'));
+      const images = Array.from(elementToCapture.getElementsByTagName('img')) as HTMLImageElement[];
+      
+      // DEBUG: Check QR code src
+      images.forEach((img: HTMLImageElement) => {
+          if (img.alt === 'QR') {
+            const srcStart = img.src ? img.src.substring(0, 50) : 'null';
+            console.log('QR Code SRC detected:', srcStart + '...');
+          }
+      });
+
       await Promise.all(images.map((img: HTMLImageElement) => {
           if (img.complete) return Promise.resolve();
           return new Promise<void>((resolve) => {
-              img.onload = () => resolve();
-              img.onerror = () => resolve(); // Validate even if error to prevent hanging
+              const loadHandler = () => {
+                  img.removeEventListener('load', loadHandler);
+                  img.removeEventListener('error', loadHandler);
+                  resolve();
+              };
+              img.addEventListener('load', loadHandler);
+              img.addEventListener('error', loadHandler);
           });
       }));
       
+      // Small delay to ensure rendering is stable
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       try {
         const canvas = await html2canvas(elementToCapture as HTMLElement, {
             scale: 3, // Increased scale for better quality
             useCORS: true, 
+            allowTaint: true, // Allow tainted images (helpful for some data URIs)
             backgroundColor: null, 
-            logging: false,
+            logging: true, // Enable logging for debugging
             // Allow html2canvas to determine size from the element
         });
         
