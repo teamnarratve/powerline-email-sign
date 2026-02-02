@@ -86,23 +86,42 @@ const SignaturePreview = forwardRef<PreviewHandle, SignaturePreviewProps>(({ htm
         doc.write(htmlContent);
         doc.close();
         
-        // Adjust height automatically
-        const updateHeight = () => {
+        // Adjust dimensions automatically
+        const updateDimensions = () => {
           if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+            // Reset to get natural dimensions
             iframe.style.height = '100px'; 
-            const newHeight = iframe.contentDocument.documentElement.scrollHeight + 20; // Added extra padding
+            iframe.style.width = '100%';
+            
+            const body = iframe.contentDocument.body;
+            const html = iframe.contentDocument.documentElement;
+            
+            const newHeight = Math.max(
+                body.scrollHeight, body.offsetHeight, 
+                html.clientHeight, html.scrollHeight, html.offsetHeight
+            ) + 20;
+            
+            const newWidth = Math.max(
+                body.scrollWidth, body.offsetWidth, 
+                html.clientWidth, html.scrollWidth, html.offsetWidth
+            ) + 20;
+
             iframe.style.height = `${newHeight}px`;
+            // Only increase width if content needs it, otherwise 100% is fine
+            if (newWidth > iframe.offsetWidth) {
+                 iframe.style.width = `${newWidth}px`;
+            }
           }
         };
 
         // Call immediately
-        updateHeight();
+        updateDimensions();
         
-        // Also ensure we wait for images to load inside iframe to get correct height
+        // Also ensure we wait for images to load inside iframe to get correct dimensions
         const images = doc.getElementsByTagName('img');
         if (images.length > 0) {
             Array.from(images).forEach(img => {
-                img.onload = updateHeight;
+                img.onload = updateDimensions;
             });
         }
         
