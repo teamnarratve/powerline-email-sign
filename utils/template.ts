@@ -31,39 +31,81 @@ export const generateSignatureHTML = (data: SignatureData): string => {
   const mobileIcon = getColoredIcon(Icons.mobile, colors.lightBlue);
   const faxIcon = getColoredIcon(Icons.fax, colors.lightBlue);
   const emailIcon = getColoredIcon(Icons.email, colors.lightBlue);
-
   const websiteIcon = getColoredIcon(Icons.website, colors.lightBlue);
 
-  // Logic to determine the Phone/Fax/Mobile rows
-  // Adjusted alignment for icons to ensure they center vertically with text
-  
+  /**
+   * Helper function to generate a strictly aligned row using pure tables.
+   * RULES:
+   * - One TR, Two TDs.
+   * - TD 1: Icon. Fixed width (20px). Vertical Align Middle.
+   * - TD 2: Content. No fixed width/height. Vertical Align Middle.
+   * - No absolute positioning. No overflow hidden.
+   * - Fixed line-height (1.5 approx for 13px font = ~20px).
+   */
+  const createRow = (iconSrc: string, contentHtml: string) => {
+      return `
+        <tr>
+            <!-- Icon Cell: Fixed Width, Vertical Align Middle -->
+            <td style="width: 20px; vertical-align: middle; padding: 0; margin: 0; line-height: 1;">
+                <img src="${iconSrc}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
+            </td>
+            <!-- Content Cell: Fluid, Vertical Align Middle -->
+            <td style="vertical-align: middle; padding-left: 8px; line-height: 1.5;">
+                ${contentHtml}
+            </td>
+        </tr>
+      `;
+  };
+
+  // Logic for Fax/Mobile Row
   let faxMobileRow = '';
-  
   if (data.faxNumber && data.faxNumber.trim() !== '') {
-      faxMobileRow = `
-        <tr>
-            <td style="width: 20px; vertical-align: middle; height: 20px;">
-                <img src="${faxIcon}" width="14" height="14" alt="Fax" style="vertical-align: middle; display: block; margin: 0;">
-            </td>
-            <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
-                <span style="margin-right: 12px; vertical-align: middle; line-height: 20px;">${data.faxNumber}</span>
-                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle; margin-right: 6px; display: inline-block;">
-                <span style="vertical-align: middle; line-height: 20px;">${data.mobileNumber}</span>
-            </td>
-        </tr>
+      // Content HTML for fax/mobile:
+      // We align the inline mobile icon to the middle as well.
+      const content = `
+        <span style="vertical-align: middle;">${data.faxNumber}</span>
+        <span style="display: inline-block; width: 10px;"></span> 
+        <img src="${mobileIcon}" width="12" height="14" style="vertical-align: middle; display: inline-block;">
+        <span style="display: inline-block; margin-left: 6px; vertical-align: middle;">${data.mobileNumber}</span>
       `;
+      faxMobileRow = createRow(faxIcon, content);
   } else {
-      faxMobileRow = `
-        <tr>
-            <td style="width: 20px; vertical-align: middle; height: 20px;">
-                <img src="${mobileIcon}" width="12" height="14" alt="Mobile" style="vertical-align: middle; display: block; margin: 0;">
-            </td>
-            <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
-                <span style="vertical-align: middle; line-height: 20px;">${data.mobileNumber}</span>
-            </td>
-        </tr>
-      `;
+      faxMobileRow = createRow(mobileIcon, `<span style="vertical-align: middle;">${data.mobileNumber}</span>`);
   }
+
+  // Rows for other items
+  // Note: Line-height 1.5 is set on the TD, so spans inside will inherit or can be explicit.
+  const phoneRow = createRow(phoneIcon, `
+    <span style="vertical-align: middle;">${data.officePhone}</span> 
+    <span style="font-weight: 700; color: #222; margin-left: 5px; font-size: 11px; vertical-align: middle; line-height: 1.5;">EXT - ${data.extension}</span>
+  `);
+  
+  const emailRow = createRow(emailIcon, `<a href="mailto:${data.email}" style="color: ${colors.textGray}; text-decoration: none; vertical-align: middle;">${data.email}</a>`);
+
+  // Footer Rows (Website, Branch Email)
+  // These are side-by-side cells. We will use an inner table for each to strictly enforce the icon/text layout
+  // just like the main rows, but inside a TD.
+  const createFooterTable = (iconSrc: string, contentHtml: string, alignRight: boolean = false) => {
+      return `
+        <table cellpadding="0" cellspacing="0" border="0" align="${alignRight ? 'right' : 'left'}">
+            <tr>
+                <!-- Icon Cell -->
+                <td style="width: 20px; vertical-align: middle; padding: 0; margin: 0; line-height: 1;">
+                    <img src="${iconSrc}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
+                </td>
+                <!-- Content Cell -->
+                <td style="vertical-align: middle; padding-left: 8px; line-height: 1.5; white-space: nowrap;">
+                    ${contentHtml}
+                </td>
+            </tr>
+        </table>
+      `;
+  };
+
+  const websiteTable = createFooterTable(websiteIcon, `<a href="${FIXED_CONFIG.websiteUrl}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; vertical-align: middle;">${websiteDisplay}</a>`, false);
+  
+  const branchEmailTable = createFooterTable(emailIcon, `<a href="mailto:${data.branchEmail}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; vertical-align: middle;">${data.branchEmail}</a>`, true);
+
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -98,31 +140,11 @@ export const generateSignatureHTML = (data: SignatureData): string => {
                                         </div>
                                         
                                         <!-- Contact Info Table -->
-                                        <!-- Enforcing strict layout constraints for perfect alignment -->
-                                        <table cellpadding="0" cellspacing="0" border="0" style="font-size: 13px; color: ${colors.textGray}; line-height: 20px;">
-                                            <!-- Phone -->
-                                            <tr>
-                                                <td style="width: 20px; vertical-align: middle; height: 20px;">
-                                                    <img src="${phoneIcon}" width="12" height="12" alt="Phone" style="vertical-align: middle; display: block; margin: 0;">
-                                                </td>
-                                                <td style="vertical-align: middle; height: 20px; padding-left: 8px;">
-                                                    <span style="vertical-align: middle; line-height: 20px;">${data.officePhone}</span> 
-                                                    <span style="font-weight: 700; color: #222; margin-left: 5px; font-size: 11px; vertical-align: middle; line-height: 20px;">EXT - ${data.extension}</span>
-                                                </td>
-                                            </tr>
-                                            
-                                            <!-- Dynamic Fax/Mobile Row -->
+                                        <!-- PURE TABLE ALIGNMENT (No Absolute Positioning) -->
+                                        <table cellpadding="0" cellspacing="0" border="0" style="font-size: 13px; color: ${colors.textGray}; width: 100%;">
+                                            ${phoneRow}
                                             ${faxMobileRow}
-
-                                            <!-- Email -->
-                                            <tr>
-                                                <td style="width: 20px; vertical-align: middle; height: 20px;">
-                                                    <img src="${emailIcon}" width="12" height="12" alt="Email" style="vertical-align: middle; display: block; margin: 0;">
-                                                </td>
-                                                <td style="vertical-align: middle; height: 20px; padding-left: 8px;">
-                                                    <a href="mailto:${data.email}" style="color: ${colors.textGray}; text-decoration: none; vertical-align: middle; line-height: 20px;">${data.email}</a>
-                                                </td>
-                                            </tr>
+                                            ${emailRow}
                                         </table>
                                     </td>
 
@@ -163,30 +185,12 @@ export const generateSignatureHTML = (data: SignatureData): string => {
                                                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                         <tr>
                                                             <!-- Website -->
-                                                            <td style="vertical-align: middle;">
-                                                                <table cellpadding="0" cellspacing="0" border="0">
-                                                                    <tr>
-                                                                        <td style="width: 20px; vertical-align: middle; height: 20px;">
-                                                                            <img src="${websiteIcon}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
-                                                                        </td>
-                                                                        <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
-                                                                            <a href="${FIXED_CONFIG.websiteUrl}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle; line-height: 20px;">${websiteDisplay}</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                </table>
+                                                            <td style="width: 48%; vertical-align: middle;">
+                                                                ${websiteTable}
                                                             </td>
                                                             <!-- Branch Email -->
-                                                            <td style="vertical-align: middle; text-align: right;">
-                                                                <table cellpadding="0" cellspacing="0" border="0" align="right">
-                                                                    <tr>
-                                                                        <td style="width: 20px; vertical-align: middle; height: 20px;">
-                                                                            <img src="${emailIcon}" width="14" height="14" style="vertical-align: middle; display: block; margin: 0;">
-                                                                        </td>
-                                                                        <td style="vertical-align: middle; white-space: nowrap; height: 20px; padding-left: 8px;">
-                                                                            <a href="mailto:${data.branchEmail}" style="font-size: 12px; color: #333; text-decoration: none; font-weight: 500; display: inline-block; vertical-align: middle; line-height: 20px;">${data.branchEmail}</a>
-                                                                        </td>
-                                                                    </tr>
-                                                                </table>
+                                                            <td style="width: 48%; vertical-align: middle; text-align: right;">
+                                                                ${branchEmailTable}
                                                             </td>
                                                         </tr>
                                                     </table>

@@ -7,12 +7,31 @@ import { generateSignatureHTML } from './utils/template';
 import SignatureForm from './components/SignatureForm';
 import SignaturePreview, { PreviewHandle } from './components/SignaturePreview';
 import SuccessModal from './components/SuccessModal';
+import { supabase } from './utils/supabase';
+import Login from './components/Login';
 
 const App: React.FC = () => {
   const [data, setData] = useState<SignatureData>(INITIAL_DATA);
   const previewRef = useRef<PreviewHandle>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleDataChange = (key: keyof SignatureData, value: string) => {
     setData(prev => ({ ...prev, [key]: value }));
@@ -61,6 +80,22 @@ const App: React.FC = () => {
       });
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  if (loading) {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+      );
+  }
+
+  if (!session) {
+      return <Login />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
@@ -76,6 +111,15 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-1.5 sm:gap-2">
+             <button 
+                onClick={handleSignOut}
+                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all mr-2"
+                title="Sign Out"
+             >
+                <div className="flex items-center gap-2">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                </div>
+             </button>
              <button 
                 onClick={handleReset}
                 className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
