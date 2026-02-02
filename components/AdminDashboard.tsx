@@ -184,7 +184,8 @@ interface SignatureModalProps {
 }
 
 const SignatureModal: React.FC<SignatureModalProps> = ({ signature, onClose }) => {
-    const previewRef = React.useRef<{ exportPng: () => void }>(null);
+    // Correct type for the ref based on SignaturePreview's exposed handle
+    const previewRef = React.useRef<{ captureImage: () => Promise<Blob | null> }>(null);
     
     const mapToSignatureData = (sig: GeneratedSignature): SignatureData => {
         return {
@@ -213,9 +214,23 @@ const SignatureModal: React.FC<SignatureModalProps> = ({ signature, onClose }) =
         save(blob, `${signature.full_name.replace(/\s+/g, '_')}_Signature.html`);
     };
 
-    const handleExportPng = () => {
+    const handleExportPng = async () => {
         if (previewRef.current) {
-            previewRef.current.exportPng();
+            try {
+                // The methods exposed by SignaturePreview is captureImage, not exportPng
+                const blob = await previewRef.current.captureImage();
+                if (blob) {
+                    // @ts-ignore
+                    const save = FileSaver.saveAs || FileSaver;
+                    save(blob, `${signature.full_name.replace(/\s+/g, '_')}_Signature.png`);
+                } else {
+                    console.error("Failed to capture image: blob is null");
+                    alert("Failed to generate PNG. Please try again.");
+                }
+            } catch (err) {
+                console.error("Export PNG error:", err);
+                alert("An error occurred while exporting PNG.");
+            }
         }
     };
 
